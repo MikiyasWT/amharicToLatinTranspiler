@@ -1,6 +1,7 @@
 import psycopg2
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # Import load_dotenv here
+from tqdm import tqdm
 
 
 
@@ -49,12 +50,19 @@ def translate_geez_to_latin(geez_text):
         else:
             latin_text += char
     return latin_text
-
+# Translate Geez text to Latin using the custom dictionary
 # Load environment variables from .env file
 load_dotenv()
 
 try:
     # Get database credentials from environment variables
+    # you should define environmnt varibale like below
+    # DB_HOST='your host '
+    # DB_PORT=your host port
+    # DB_NAME='your postgress database name'
+    # DB_USER='database user name'
+    # DB_PASSWORD='database user password'
+    
     DB_HOST = os.getenv("DB_HOST")
     DB_PORT = os.getenv("DB_PORT")
     DB_NAME = os.getenv("DB_NAME")
@@ -73,12 +81,25 @@ try:
         with conn.cursor() as cur:
             # Fetch all customer names from the customers table
             cur.execute("SELECT id, name FROM customers")
+            
+            # Get the total number of rows for tqdm
+            total_rows = cur.rowcount
+            
+            # Create tqdm progress bar
+            progress_bar = tqdm(total=total_rows, desc="Translating Names", unit=" row")
+            
             # Iterate through the rows and transliterate non-Latin names to Latin names
             for row in cur.fetchall():
                 customer_id, geez_text = row
                 latin_name = translate_geez_to_latin(geez_text)  # Transliterate the name to Latin characters
                 # Update the customers table with the Latin name
                 cur.execute("UPDATE customers SET name = %s WHERE id = %s", (latin_name, customer_id))
+                
+                # Update the progress bar
+                progress_bar.update(1)
+
+            # Close the progress bar
+            progress_bar.close()
 
             # Commit the changes to the database
             conn.commit()
@@ -95,11 +116,6 @@ except Exception as e:
 
 
 
-
-
-
-
-# Translate Geez text to Latin using the custom dictionary
 
 
 
