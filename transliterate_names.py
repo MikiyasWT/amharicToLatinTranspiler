@@ -4,7 +4,7 @@ from dotenv import load_dotenv  # Import load_dotenv here
 from tqdm import tqdm
 
 
-
+#dictionary
 def translate_geez_to_latin(geez_text):
     # Example dictionary mapping Geez characters to Latin equivalents
     geez_to_latin_dict = {
